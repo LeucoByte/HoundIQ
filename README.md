@@ -1,1 +1,2 @@
 # HoundIQ
+An AI-powered greyhound racing analysis application that combines historical structured data, statistical analysis, external research and LLM-based reasoning to produce evidence-based race assessments.
