@@ -59,3 +59,32 @@ Keeping Python version management separate from dependency management also leave
 - **Upgrades:** Install the new patch version, update the project pin and verify the application before accepting the change. Minor-version upgrades require checking dependency compatibility first.
 
 When `pyproject.toml` is established, its `requires-python` metadata should declare `>=3.15,<3.16`, while `.python-version` continues to pin the exact development interpreter.
+
+# Dependency Management
+
+## Decision
+Use **uv** to manage HoundIQ's dependencies and project environment.
+
+## Alternatives considered
+| Approach | Advantages | Trade-offs |
+|---|---|---|
+| pip + `venv` | Native Python tooling, no additional manager. | Requires more manual coordination to declare, lock, separate and synchronize dependencies. |
+| pip-tools | Compiles pinned dependency files and synchronizes environments using `pip-compile` and `pip-sync`. | Requires separate input and generated files, with additional commands and environment management. |
+| Poetry | Mature dependency manager with lockfiles, dependency groups and environment isolation. | Introduces its own project and environment management workflow. |
+| **uv** | Centralizes dependency declaration, resolution, locking, installation and virtual environment management. | Introduces a dedicated tool and its own native lockfile format. |
+
+## Rationale
+uv offers the most straightforward workflow for this project. It uses `pyproject.toml` for dependency declarations and `uv.lock` for exact resolved versions, including transitive dependencies.
+
+Its lockfile supports universal resolution across platforms, which is useful when reproducing the environment beyond the current WSL setup. It also creates and synchronizes the project's `.venv` automatically.
+
+Importantly, uv recognises the Python interpreter selected by the existing `.python-version` file, including installations managed by pyenv. To preserve the responsibility established in Issue #7, automatic Python downloads will be disabled.
+
+## Dependency conventions
+- **Runtime dependencies:** Declared in `[project].dependencies`.
+- **Development and testing dependencies:** Declared in a single `dev` dependency group. Separate testing groups are unnecessary for the current solo-developed MVP.
+- **Version control:** `pyproject.toml` and `uv.lock` are committed. `.venv` remains local and must not be committed.
+- **Reproducibility:** Use `uv sync --locked` to install the committed dependency resolution without silently modifying the lockfile.
+- **Updates:** Dependency upgrades must be deliberate and followed by the relevant tests.
+
+The `pylock.toml` standard (PEP 751) is also supported as an export format, providing an alternative to uv's native lockfile if interoperability becomes necessary.

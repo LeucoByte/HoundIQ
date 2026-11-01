@@ -74,3 +74,34 @@ pyenv shell <version>
 ```
 
 Always verify the selected interpreter with `python --version` before running the application.
+
+## Dependency Management
+HoundIQ uses [uv](https://docs.astral.sh/uv/) to manage dependencies and create an isolated project environment.
+
+### 1. Install uv
+Install uv inside your Linux or WSL environment:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Verify the installation:
+
+```bash
+uv --version
+```
+
+### 2. Install project dependencies
+From the repository root:
+
+```bash
+uv sync --locked
+```
+
+This creates the `.venv` directory and installs the exact dependency versions recorded in `uv.lock`, using the Python version declared in `.python-version`.
+
+No manual virtual environment activation is required. Run project commands through uv:
+
+```bash
+uv run --locked <command>
+```
