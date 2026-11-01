@@ -1,7 +1,7 @@
 # Programming language selection
 
 ## Decision
-Python.
+**Python.**
 
 Three project-specific reasons support this decision:
 1. **Existing GBGB scraper**: The data extraction pipeline is already implemented in Python. Keeping the same language avoids rewriting working components or introducing unnecessary communication between different language runtimes.
@@ -26,3 +26,36 @@ LLM integration and MCP are not decisive differentiators: [OpenRouter provides S
 
 ## Trade-offs
 No project-specific disadvantage has been identified that outweighs Python's advantages for the current MVP.
+
+# Python version management
+
+## Decision
+Use **pyenv** to manage Python installations and project-specific versions.
+
+The project will use **CPython 3.15.2**, with Python 3.15 as its supported minor version. The exact interpreter version will be stored in a `.python-version` file at the repository root.
+
+Python 3.15.2 is the latest stable patch release at the time of this decision. The main analytical libraries considered for HoundIQ, including NumPy, pandas, SciPy and scikit-learn, already support Python 3.15.
+
+## Alternatives considered
+| Tool | Advantages | Trade-offs |
+|---|---|---|
+| **pyenv** | Dedicated Python version manager, project-level `.python-version`, **works on Linux and WSL.** | Builds most Python versions from source, requiring system build dependencies. Does not support native Windows. |
+| uv | Installs managed Python builds, supports `.python-version` and works on Linux and Windows. | Also provides dependency and project management, potentially overlapping with the decision in Issue #8. Uses prebuilt distributions maintained by Astral rather than building CPython from source. |
+| mise | Manages Python and multiple other development runtimes; supports project-specific versions and Linux/Windows. | Broader than HoundIQ currently needs and introduces another configuration mechanism. |
+
+## Rationale
+pyenv is the most appropriate option because HoundIQ currently needs to manage one runtime: Python. Its `.python-version` file provides a simple, repository-level declaration that is automatically recognised when entering the project directory.
+
+Development will use Linux environments, including WSL on Windows. pyenv supports this setup directly, its Windows limitation is not a blocker because the project will run using the Linux interpreter rather than a native Windows installation (who codes on Windows in 2026?).
+
+The main trade-off is that pyenv builds CPython from source and therefore requires build dependencies to be installed once on each Linux environment. This is acceptable for the current project and avoids introducing a broader tool solely to manage one language.
+
+Keeping Python version management separate from dependency management also leaves the decision in Issue #8 independent.
+
+## Version policy
+- **Supported version line:** CPython 3.15.x.
+- **Current project pin:** CPython 3.15.2.
+- **Version declaration:** `.python-version`, containing `3.15.2`.
+- **Upgrades:** Install the new patch version, update the project pin and verify the application before accepting the change. Minor-version upgrades require checking dependency compatibility first.
+
+When `pyproject.toml` is established, its `requires-python` metadata should declare `>=3.15,<3.16`, while `.python-version` continues to pin the exact development interpreter.
