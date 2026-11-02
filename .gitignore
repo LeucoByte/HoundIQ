@@ -1,1 +1,4 @@
+# Python files to ignore
 .venv/
+__pycache__/
+*.py[cod]

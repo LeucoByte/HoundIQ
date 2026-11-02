@@ -105,3 +105,32 @@ No manual virtual environment activation is required. Run project commands throu
 ```bash
 uv run --locked <command>
 ```
+
+## Testing
+HoundIQ uses [pytest](https://docs.pytest.org/) for automated testing.
+
+Synchronize the development environment before running tests:
+
+```bash
+uv sync --locked
+```
+
+Run the complete test suite:
+
+```bash
+uv run --locked pytest
+```
+
+Run unit or integration tests separately:
+- Unit tests: `uv run --locked pytest tests/unit`
+- Integration tests: `uv run --locked pytest tests/integration`
+
+Check Python syntax without executing the application:
+
+```bash
+uv run --locked python -m compileall -q -x '(^|/)(\\.venv|\\.git)(/|$)' .
+```
+
+The syntax check does not replace automated tests. It only verifies that Python files can be compiled successfully.
+
+See [docs/testing.md](docs/testing.md) for the testing strategy, organization and execution conventions.
