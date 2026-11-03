@@ -177,3 +177,47 @@ def get_greyhound(
         "greyhound": greyhound,
         "history": history,
     }
+
+def get_greyhound_by_name(
+    connection: Connection,
+    dog_name: str,
+) -> dict | None:
+    if not dog_name or not dog_name.strip():
+        raise ValueError("Greyhound name cannot be empty.")
+
+    with connection.cursor(row_factory=dict_row) as cursor:
+        cursor.execute(
+            """
+            SELECT dog_id
+            FROM greyhounds
+            WHERE LOWER(
+                REGEXP_REPLACE(
+                    BTRIM(dog_name),
+                    '[[:space:]]+',
+                    ' ',
+                    'g'
+                )
+            ) = LOWER(
+                REGEXP_REPLACE(
+                    BTRIM(%s),
+                    '[[:space:]]+',
+                    ' ',
+                    'g'
+                )
+            )
+            LIMIT 2
+            """,
+            (dog_name,),
+        )
+
+        matches = cursor.fetchall()
+
+    if not matches:
+        return None
+
+    if len(matches) > 1:
+        raise ValueError(
+            f"Ambiguous greyhound name: {dog_name}"
+        )
+
+    return get_greyhound(connection, matches[0]["dog_id"])

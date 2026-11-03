@@ -1,9 +1,12 @@
 from datetime import date
 from decimal import Decimal
-
+import pytest
 from houndiq.database import get_connection
-from houndiq.queries import get_greyhound, get_race
-
+from houndiq.queries import (
+    get_greyhound,
+    get_greyhound_by_name,
+    get_race,
+)
 
 def test_get_race_returns_meeting_and_participants():
     connection = get_connection()
@@ -107,7 +110,7 @@ def test_get_greyhound_returns_profile_and_history():
         }
 
         assert result["history"]
-        
+
         historical_race = next(
             item
             for item in result["history"]
@@ -154,6 +157,58 @@ def test_get_greyhound_returns_profile_and_history():
         connection.close()
 
 
+@pytest.mark.parametrize(
+    "dog_name",
+    [
+        "Carmac Pete",
+        "carmac pete",
+        "  CARMAC   PETE  ",
+    ],
+)
+def test_get_greyhound_by_name_returns_same_profile_and_history(dog_name):
+    connection = get_connection()
+
+    try:
+        expected = get_greyhound(connection, 645340)
+        result = get_greyhound_by_name(connection, dog_name)
+
+        assert expected is not None
+        assert result == expected
+        assert result["greyhound"]["dog_id"] == 645340
+
+    finally:
+        connection.rollback()
+        connection.close()
+
+
+def test_get_greyhound_by_name_returns_none_for_missing_name():
+    connection = get_connection()
+
+    try:
+        result = get_greyhound_by_name(
+            connection,
+            "Nonexistent HoundIQ Greyhound",
+        )
+
+        assert result is None
+
+    finally:
+        connection.rollback()
+        connection.close()
+
+
+def test_get_greyhound_by_name_rejects_empty_name():
+    connection = get_connection()
+
+    try:
+        with pytest.raises(ValueError):
+            get_greyhound_by_name(connection, "   ")
+
+    finally:
+        connection.rollback()
+        connection.close()
+
+
 def test_queries_return_none_for_missing_entities():
     connection = get_connection()
 
@@ -161,6 +216,10 @@ def test_queries_return_none_for_missing_entities():
         assert get_race(connection, 454669, 999999999) is None
         assert get_race(connection, 454688, 1256370) is None
         assert get_greyhound(connection, 999999999) is None
+        assert get_greyhound_by_name(
+            connection,
+            "Nonexistent HoundIQ Greyhound",
+        ) is None
 
     finally:
         connection.rollback()
