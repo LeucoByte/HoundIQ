@@ -134,3 +134,32 @@ uv run --locked python -m compileall -q -x '(^|/)(\\.venv|\\.git)(/|$)' .
 The syntax check does not replace automated tests. It only verifies that Python files can be compiled successfully.
 
 See [docs/testing.md](docs/testing.md) for the testing strategy, organization and execution conventions.
+
+## Start Ingestion
+HoundIQ retrieves historical racing data from the GBGB API and persists it directly into PostgreSQL.
+
+### Set Up HoundIQ Environment
+Copy `.env.example` into `.env`:
+
+```bash
+cat .env.example > .env
+```
+
+And fill yourself `.env` file using real names and passwords:
+
+```bash
+nano .env
+```
+
+### Execution
+Start the database:
+
+```bash
+docker compose up -d db
+```
+
+Run the scraper:
+
+```bash
+uv run --env-file .env python -m houndiq.scraper
+```
