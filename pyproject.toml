@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.15,<3.16"
 dependencies = [
     "psycopg[binary]>=3.3,<4",
+    "requests>=2.32,<3",
 ]
 
 [tool.uv]
@@ -11,6 +12,7 @@ python-downloads = "manual"
 
 [tool.pytest.ini_options]
 testpaths = ["tests/test_environment.py", "tests/unit"]
+pythonpath = ["tests"]
 
 [dependency-groups]
 dev = [
